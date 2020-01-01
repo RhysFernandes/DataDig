@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>DataDig</title>
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+  <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId            : '1069106236593360',
+        autoLogAppEvents : true,
+        cookie           : true,
+        xfbml            : true,
+        version          : 'v5.0'
+      });
+
+
+      FB.getLoginStatus(function(response) {
+        statusChangeCallback(response);
+      });
+
+    };
+
+    (function(d, s, id){
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = "https://connect.facebook.net/en_US/sdk/debug.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+    function statusChangeCallback(response){
+      if(response.status === 'connected'){
+        console.log("Logged in and autheticated!");
+        toggleLoginButton(true);
+        testAPI();
+      } else{
+        console.log("Not logged in!")
+        toggleLoginButton(false);
+      }
+      //console.log(response);
+    }
+
+    function checkLoginState() {
+      FB.getLoginStatus(function(response) {
+        statusChangeCallback(response);
+      });
+    }
+
+    function logout(){
+      console.log("Here");
+      FB.logout(function(response){
+        if(response && !response.error){
+          console.log("Logged out!");
+        }else{
+          console.log("ERROR");
+        }
+
+      });
+      toggleLoginButton(false);
+    }
+
+    function toggleLoginButton(isLoggedIn){
+      if(isLoggedIn){
+        document.getElementById('logout').style.display = 'inline';
+        document.getElementById('fb-btn').style.display = 'none';
+      }else{
+        document.getElementById('logout').style.display = 'none';
+        document.getElementById('fb-btn').style.display = 'inline';
+      }
+    }
+
+    function testAPI (){
+      FB.api ('me?fields=name,email,birthday,hometown,events', function(response){
+        if (response && !response.error){
+          console.log (response);
+          buildProfile (response);
+        }
+      });
+    }
+
+    function buildProfile (user){
+      let profile = `
+      <h3>${user.name}</h3>
+      <ul class="list-group">`;
+
+      events = user.events.data;
+      for (i = 0; i < events.length; i++){
+
+        lines = events[i].description.split(/\n/g);
+        let description = ``;
+        for (j = 0; j < lines.length; j++){
+          description += `<p>${lines[j]}</p>`
+        }
+
+        let event = `
+        <li>
+        <h4>${events[i].name}</h4>`
+        + description + `
+        <ul>
+          <li>Start time: ${events[i].start_time}</li>
+          <li>End Time: ${events[i].end_time}</li>
+        </ul>
+        </li>`;
+
+        profile += event;
+        if (i + 1 != events.length){
+          profile += `<br>`;
+        }
+      }
+      profile += `</ul>`
+
+      document.getElementById('profile').innerHTML = profile;
+    }
+
+    function buildProfileTest(user){
+      let profile = `
+      <h3>${user.name}</h3>
+      <ul class="list-group">
+        <li class="list-group-item">User ID: ${user.id}</li>
+        <li class="list-group-item">Email: ${user.email}</li>
+        <li class="list-group-item">Birthday: ${user.birthday}</li>
+        <li class="list-group-item">Home Town: ${user.hometown.name}</li>
+      </ul>`;
+
+      document.getElementById('profile').innerHTML = profile;
+    }
+    // var finished_rendering = function() {
+    //   console.log("finished rendering plugins");
+    //   var spinner = document.getElementById("spinner");
+    //   spinner.removeAttribute("style");
+    //   spinner.removeChild(spinner.childNodes[0]);
+    // }
+    // FB.Event.subscribe('xfbml.render', finished_rendering);
+  </script>
+  <!-- <script async defer src="https://connect.facebook.net/en_US/sdk.js"></script>
+
+  <div id="spinner"
+    style="
+      background: #4267b2;
+      border-radius: 5px;
+      color: white;
+      height: 40px;
+      text-align: center;
+      width: 250px;">
+    Loading
+    <div
+    class="fb-login-button"
+    data-max-rows="1"
+    data-size="large"
+    data-button-type="continue_with"
+    data-use-continue-as="true">
+    </div>
+  </div> -->
+
+  <div class="container">
+    <nav class="navigation">
+
+      <ul>
+        <li>
+          <h4>DataDig</h4>
+        </li>
+        <li>
+          <a href="/">Show events</a>
+        </li>
+        <li>
+          <a id="logout" href='/' onclick="logout()">Logout</a>
+        </li>
+        <li>
+          <fb:login-button id="fb-btn"
+            data-auto-logout-link="false"
+            scope="public_profile, email, user_birthday, user_hometown, user_events"
+            onlogin="checkLoginState();">
+          </fb:login-button>
+        </li>
+      </ul>
+    </nav>
+    <div class="containerEvents">
+      <div id="profile"></div>
+    </div>
+
+  </div>
+</body>
+</html>
